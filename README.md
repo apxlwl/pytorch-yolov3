@@ -27,6 +27,7 @@ Initial backbone weights | train scales| baseline | +multi test|+flip|
  coco pretrained | 448,480,512|0.817|0.834|0.845
 darknet53| 448,480,512|0.727|0.737|0.754
 darknet53| 480|0.738|0.753|0.769
+
 Note: all experiments trained for 100 epochs with learning rate dropped 10 times at the 70 and 90 epoch.
 ## Supported Attributes
 - [x] Data agumentation  
