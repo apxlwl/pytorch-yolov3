@@ -10,7 +10,7 @@ class Options():
     parser.add_argument('--gpu', default='0')
     # Optimization options
     parser.add_argument('--resume', default=None) #options:['load_darknet','load_yolov3',int]
-    parser.add_argument('--total_epoch', type=int, default=200, help='Number of epochs to train.')
+    parser.add_argument('--total_epoch', type=int, default=100, help='Number of epochs to train.')
 
     parser.add_argument('--batch_size', type=int,default=12, help='Batch size for training.')
     parser.add_argument('--lr_initial', type=float, default=1e-4, help='The Learning Rate.')

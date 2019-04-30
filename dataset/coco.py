@@ -143,17 +143,8 @@ def get_dataset(dataset_root, batch_size, net_size):
   valset = COCOdataset(dataset_root, datatransform, subset='val', batchsize=batch_size, netsize=net_size,istrain=False)
   valset = torch.utils.data.DataLoader(dataset=valset,batch_size=1,shuffle=False,num_workers=4,pin_memory=True)
 
-  return valset,valset
-  datatransform = transform.YOLO3DefaultTrainTransform(mean=(0, 0, 0), std=(1, 1, 1))
-  trainset = COCOdataset(dataset_root, datatransform, subset='train', shuffle=True, batchsize=batch_size,
-                         netsize=net_size)
-  trainset = tf.data.Dataset.from_generator(trainset,
-                                            ((tf.float32, tf.string, tf.string, tf.float32, tf.float32, tf.float32,
-                                              tf.float32,
-                                              tf.float32)))
-  # be careful to drop the last smaller batch if using tf.function
-  trainset = trainset.batch(1, drop_remainder=True).prefetch(tf.data.experimental.AUTOTUNE)
-
+  trainset = COCOdataset(dataset_root, datatransform, subset='train', batchsize=batch_size, netsize=net_size,istrain=True)
+  trainset = torch.utils.data.DataLoader(dataset=trainset,batch_size=1,shuffle=True,num_workers=4,pin_memory=True)
   return trainset, valset
 
 

@@ -5,3 +5,4 @@ checkpoints/
 summary/
 weights/
 *mine.py
+*.txt

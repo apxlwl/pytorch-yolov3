@@ -90,12 +90,4 @@ def get_dataset(dataset_root, batch_size, net_size):
   return trainset, valset
 
 
-if __name__ == '__main__':
-  train,val=get_dataset('/home/gwl/datasets/VOCdevkit',8,480)
-  print(len(train))
-  print(len(val))
-  for idx_batch, inputs in enumerate(train):
-    inputs = [input if isinstance(input, list) else input.squeeze(0) for input in inputs]
-    (imgs, imgpath, annpath, padscale, ori_shapes, *_) = inputs
-    print(imgpath)
-    # assert 0
+
