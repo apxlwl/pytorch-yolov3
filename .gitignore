@@ -1,0 +1,7 @@
+*.pyc
+*/__pycache__
+.idea/
+checkpoints/
+summary/
+weights/
+*mine.py
