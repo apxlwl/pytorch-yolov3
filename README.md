@@ -1,7 +1,7 @@
-# tf2-yolo3 
+# pytorch-yolo3 
 
 ## Introduction
-A Tensorflow2.0 implementation of YOLOv3
+Pytorch implementation of YOLOv3. Tensorflow2.0 version can be found [here](https://github.com/wlguan/tensorflow2.0-yolov3)
 
 ## Quick Start 
 1. Download yolov3.weights and darknet53.conv.74 from [YOLO website](http://pjreddie.com/darknet/yolo/).
@@ -17,10 +17,6 @@ python main_coco.py --resume load_yolov3 --do_test --net_size 608 --batch_size 8
 python main_voc.py/main_coco.py --resume load_darknet --net_size 480 --batch_size 12
 ```
 
-
-2. The ckpt file will be stored in the ./checkpoints/dummy_name named with epoch number and use --resume xyz to resume from the xyz epoch
-
-
 ## Visualization
 The Tensorboard is origanized like [TF-ObjectDection-API](https://github.com/tensorflow/models/tree/master/research/object_detection)
 
@@ -28,7 +24,7 @@ The Tensorboard is origanized like [TF-ObjectDection-API](https://github.com/ten
 ## Performance on VOC2007 Test(mAP)
 Initial backbone weights | train scales| baseline | +multi test|+flip|
 | ------ | ------ | ------ | ------ | ------ |
- coco pretrained | 448,480,512|0.817|0.834|
+ coco pretrained | 448,480,512|0.817|0.834|0.845
 darknet53| 448,480,512|0.727|0.737|0.754
 darknet53| 480|0.738|0.753|0.769
 Note: all experiments trained for 100 epochs with learning rate dropped 10 times at the 70 and 90 epoch.
