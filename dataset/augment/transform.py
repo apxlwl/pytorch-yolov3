@@ -48,17 +48,17 @@ class YOLO3DefaultTrainTransform(object):
     """
     img=timage.random_color_distort(img)
     # random expansion with prob 0.5
-    #if np.random.uniform(0, 1) > 0:
-     # img, expand = timage.random_expand(img)
-     # bbox = tbbox.translate(bbox, x_offset=expand[0], y_offset=expand[1])
-    #else:
-     # img, bbox = img, bbox
+    if np.random.uniform(0, 1) > 0:
+     img, expand = timage.random_expand(img)
+     bbox = tbbox.translate(bbox, x_offset=expand[0], y_offset=expand[1])
+    else:
+     img, bbox = img, bbox
 
     # random cropping
     h, w, _ = img.shape
-    #bbox, crop = tbbox.random_crop_with_constraints(bbox, (w, h))
-    #x0, y0, w, h = crop
-    #img=timage.fixed_crop(img,x0,y0,w,h)
+    bbox, crop = tbbox.random_crop_with_constraints(bbox, (w, h))
+    x0, y0, w, h = crop
+    img=timage.fixed_crop(img,x0,y0,w,h)
 
     #resize
     img=timage.img_resize(img,out_size=(width,height))
