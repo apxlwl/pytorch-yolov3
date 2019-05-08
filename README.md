@@ -19,7 +19,9 @@ python main_voc.py/main_coco.py --resume load_darknet --net_size 480 --batch_siz
 
 ## Visualization
 The Tensorboard is origanized like [TF-ObjectDection-API](https://github.com/tensorflow/models/tree/master/research/object_detection)
+![Ap of all categories](assests/board.png)
 
+![GT VS Prediction across time](assests/board.gif)
 
 ## Performance on VOC2007 Test(mAP)
 Initial backbone weights | train scales| baseline|data augmentation | +multi test|+flip|
