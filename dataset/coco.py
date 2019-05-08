@@ -99,7 +99,6 @@ class COCOdataset(data.Dataset):
     img_batch = []
     imgpath_batch = []
     annpath_batch = []
-    pad_scale_batch = []
     ori_shape_batch = []
     grid0_batch = []
     grid1_batch = []
@@ -118,12 +117,10 @@ class COCOdataset(data.Dataset):
       labels = ann['labels']
       img, bboxes = self._transform(random_trainsize, random_trainsize, img, bboxes)
       list_grids = transform.preprocess(bboxes, labels, img.shape[:2], class_num=80, anchors=self.anchors)
-      pad_scale = (1, 1)
       img_batch.append(img)
       imgpath_batch.append(osp.join(self.image_dir, img_info['file_name']))
       annpath_batch.append(osp.join(self.image_dir, img_info['file_name']))
       ori_shape_batch.append(ori_shape)
-      pad_scale_batch.append(pad_scale)
       grid0_batch.append(list_grids[0])
       grid1_batch.append(list_grids[1])
       grid2_batch.append(list_grids[2])
@@ -131,7 +128,6 @@ class COCOdataset(data.Dataset):
     return torch.from_numpy(np.array(img_batch).transpose((0,3,1,2)).astype(np.float32)), \
            imgpath_batch, \
            annpath_batch, \
-           torch.from_numpy(np.array(pad_scale_batch).astype(np.float32)), \
            torch.from_numpy(np.array(ori_shape_batch).astype(np.float32)), \
            torch.from_numpy(np.array(grid0_batch).astype(np.float32)), \
            torch.from_numpy(np.array(grid1_batch).astype(np.float32)), \

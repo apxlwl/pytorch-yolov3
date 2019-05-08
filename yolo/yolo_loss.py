@@ -37,7 +37,7 @@ def process_output(feature_map, anchors, input_shape, num_classes, training=True
     return box_centers, box_wh, box_conf, box_prob
 
 
-def predict_yolo(feature_map_list, anchors, inputshape, imgshape, padscale, num_classes):
+def predict_yolo(feature_map_list, anchors, inputshape, imgshape, num_classes):
   boxes = []
   scores = []
   for idx in range(3):

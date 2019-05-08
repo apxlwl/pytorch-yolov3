@@ -27,7 +27,9 @@ _Trainer = Trainer(args=args,
                    optimizer=optimizer,
                    lrscheduler=scheduler
                    )
-if args.do_test:
+if args.do_inference:
+  _Trainer._inference_epoch(imgdir='input_imgdir',outdir='output_imgdir')
+elif args.do_test:
   _Trainer._valid_epoch(multiscale=args.multitest,flip=args.fliptest)
 else:
   _Trainer.train()

@@ -16,7 +16,8 @@ from utils.util import AverageMeter
 import torch
 import matplotlib.pyplot as plt
 from yolo import load_darknet_weights
-
+from torch.utils.data import DataLoader
+from PIL import Image
 class BaseTrainer:
   """
   Base class for all trainers
@@ -73,12 +74,8 @@ class BaseTrainer:
 
   def _load_ckpt(self):
     if self.args.resume == "load_darknet":
-      # self.model.load_state_dict(module2weight(torch.load(
-      #   os.path.join(self.args.pretrained_model, 'darknet53_backbone.pth'))),strict=False)
       load_darknet_weights(self.model.backbone,os.path.join(self.args.pretrained_model,'darknet53.conv.74'))
     elif self.args.resume == "load_yolov3":
-      # self.model.load_state_dict(module2weight(torch.load(
-      #   os.path.join(self.args.pretrained_model, 'yolov3.pth'))))
       load_darknet_weights(self.model.backbone,os.path.join(self.args.pretrained_model,'yolov3.weights'))
     else:  # iter or best
       ckptfile = torch.load(os.path.join(self.save_path, 'checkpoint-{}.pth'.format(self.args.resume)))
@@ -174,7 +171,7 @@ class BaseTrainer:
     self.model.train()
     for i, inputs in enumerate(self.train_dataloader):
       inputs = [input if isinstance(input, list) else input.squeeze(0) for input in inputs]
-      img, _, _, _, _, *labels = inputs
+      img, _, _, _, *labels = inputs
       self.global_iter += 1
       if self.global_iter % 200 == 0:
         print(self.global_iter)
@@ -182,22 +179,21 @@ class BaseTrainer:
           print(k, ":", v.get_avg())
       self.train_step(img, labels)
 
-  def _valid_epoch(self, multiscale, flip):
-    s=time.time()
+  #TODO merge the duplicated codes
+  def _inference_epoch(self,imgdir,outdir=None,multiscale=True,flip=True):
+    from dataset import get_imgdir
+    from utils.visualize import visualize_boxes
     self.model.eval()
-    for idx_batch, inputs in enumerate(self.test_dataloader):
-      if idx_batch == self.args.valid_batch and not self.args.do_test:  # to save time
+    dataloader = get_imgdir(imgdir, batch_size=8, net_size=self.net_size)
+    for i,(imgpath,imgs,ori_shapes) in enumerate(dataloader):
+      if i==50:
         break
-      inputs = [input if isinstance(input, list) else input.squeeze(0) for input in inputs]
-      (imgs, imgpath, annpath, padscale, ori_shapes, *_) = inputs
-
-      ori_shapes = ori_shapes.float().cuda()
+      ori_shapes=ori_shapes.cuda()
       if not multiscale:
         INPUT_SIZES = [self.net_size]
       else:
         INPUT_SIZES = [self.net_size - 32, self.net_size, self.net_size + 32]
       pyramids = makeImgPyramids(imgs.numpy().transpose(0, 2, 3, 1), scales=INPUT_SIZES, flip=flip)
-
       # produce outputFeatures for each scale
       img2multi = defaultdict(list)
       for idx, pyramid in enumerate(pyramids):
@@ -213,13 +209,66 @@ class BaseTrainer:
         allscores = []
         for _grids, _scale in zip(scalegrids[:len(INPUT_SIZES)], INPUT_SIZES):
           _boxes, _scores = predict_yolo(_grids, self.anchors, _scale, ori_shapes[imgidx],
-                                         padscale=padscale[imgidx], num_classes=self.num_classes)
+                                         num_classes=self.num_classes)
           allboxes.append(_boxes)
           allscores.append(_scores)
         if flip:
           for _grids, _scale in zip(scalegrids[len(INPUT_SIZES):], INPUT_SIZES):
             _boxes, _scores = predict_yolo(_grids, self.anchors, _scale, ori_shapes[imgidx],
-                                           padscale=padscale[imgidx], num_classes=self.num_classes)
+                                           num_classes=self.num_classes)
+            _boxes = bbox_flip(_boxes.squeeze(0), flip_x=True, size=ori_shapes[imgidx])
+            _boxes = _boxes[np.newaxis, :]
+            allboxes.append(_boxes)
+            allscores.append(_scores)
+        nms_boxes, nms_scores, nms_labels = torch_nms(torch.cat(allboxes, dim=1),
+                                                    torch.cat(allscores, dim=1),
+                                                    num_classes=self.num_classes)
+        if nms_boxes is not None:
+          detected_img=visualize_boxes(np.array(Image.open(imgpath[imgidx]).convert('RGB')),
+                                       boxes=nms_boxes.cpu().numpy(),
+                                       labels=nms_labels.cpu().numpy(),
+                                       probs=nms_scores.cpu().numpy(),
+                                       class_labels=self.labels)
+          if outdir is not None:
+            plt.imsave(os.path.join(outdir,imgpath[imgidx].split('/')[-1]),detected_img)
+
+  def _valid_epoch(self, multiscale, flip):
+    s=time.time()
+    self.model.eval()
+    for idx_batch, inputs in enumerate(self.test_dataloader):
+      if idx_batch == self.args.valid_batch and not self.args.do_test:  # to save time
+        break
+      inputs = [input if isinstance(input, list) else input.squeeze(0) for input in inputs]
+      (imgs, imgpath, annpath, ori_shapes, *_) = inputs
+
+      ori_shapes = ori_shapes.float().cuda()
+      if not multiscale:
+        INPUT_SIZES = [self.net_size]
+      else:
+        INPUT_SIZES = [self.net_size - 32, self.net_size, self.net_size + 32]
+      pyramids = makeImgPyramids(imgs.numpy().transpose(0, 2, 3, 1), scales=INPUT_SIZES, flip=flip)
+      # produce outputFeatures for each scale
+      img2multi = defaultdict(list)
+      for idx, pyramid in enumerate(pyramids):
+        pyramid = torch.from_numpy(pyramid.transpose(0, 3, 1, 2)).cuda()
+        with torch.no_grad():
+          grids = self.model(pyramid)
+        for imgidx in range(imgs.shape[0]):
+          img2multi[imgidx].append([grid[imgidx] for grid in grids])
+
+      # append prediction for each image per scale/flip
+      for imgidx, scalegrids in img2multi.items():
+        allboxes = []
+        allscores = []
+        for _grids, _scale in zip(scalegrids[:len(INPUT_SIZES)], INPUT_SIZES):
+          _boxes, _scores = predict_yolo(_grids, self.anchors, _scale, ori_shapes[imgidx],
+                                         num_classes=self.num_classes)
+          allboxes.append(_boxes)
+          allscores.append(_scores)
+        if flip:
+          for _grids, _scale in zip(scalegrids[len(INPUT_SIZES):], INPUT_SIZES):
+            _boxes, _scores = predict_yolo(_grids, self.anchors, _scale, ori_shapes[imgidx],
+                                           num_classes=self.num_classes)
             _boxes = bbox_flip(_boxes.squeeze(0), flip_x=True, size=ori_shapes[imgidx])
             _boxes = _boxes[np.newaxis, :]
             allboxes.append(_boxes)
