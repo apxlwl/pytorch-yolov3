@@ -122,7 +122,7 @@ class BaseTrainer:
 
       self.global_epoch += 1
       self._train_epoch()
-      if epoch>5:
+      if epoch>2:
         results, imgs = self._valid_epoch(multiscale=False, flip=False)
         for k, v in zip(self.logger_custom, results):
           self.writer.add_scalar(k, v, global_step=self.global_iter)
@@ -171,7 +171,9 @@ class BaseTrainer:
 
   def _train_epoch(self):
     self.model.train()
-    for i, inputs in enumerate(self.train_dataloader):
+    for idx_batch, inputs in enumerate(self.train_dataloader):
+      if idx_batch==3:
+        break
       inputs = [input if isinstance(input, list) else input.squeeze(0) for input in inputs]
       img, _, _, _, *labels = inputs
       self.global_iter += 1
@@ -223,20 +225,22 @@ class BaseTrainer:
         nms_boxes, nms_scores, nms_labels = torch_nms(torch.cat(allboxes, dim=1),
                                                     torch.cat(allscores, dim=1),
                                                     num_classes=self.num_classes)
-        # if nms_boxes is not None:
-        #   detected_img=visualize_boxes(np.array(Image.open(imgpath[imgidx]).convert('RGB')),
-        #                                boxes=nms_boxes.cpu().numpy(),
-        #                                labels=nms_labels.cpu().numpy(),
-        #                                probs=nms_scores.cpu().numpy(),
-        #                                class_labels=self.labels)
-        #   if outdir is not None:
-        #     plt.imsave(os.path.join(outdir,imgpath[imgidx].split('/')[-1]),detected_img)
+        if nms_boxes is not None:
+          detected_img=visualize_boxes(np.array(Image.open(imgpath[imgidx]).convert('RGB')),
+                                       boxes=nms_boxes.cpu().numpy(),
+                                       labels=nms_labels.cpu().numpy(),
+                                       probs=nms_scores.cpu().numpy(),
+                                       class_labels=self.labels)
+          if outdir is not None:
+            plt.imsave(os.path.join(outdir,imgpath[imgidx].split('/')[-1]),detected_img)
 
   def _valid_epoch(self, multiscale, flip):
     s=time.time()
     self.model.eval()
     for idx_batch, inputs in enumerate(self.test_dataloader):
       if idx_batch == self.args.valid_batch and not self.args.do_test:  # to save time
+        break
+      if idx_batch==3:
         break
       inputs = [input if isinstance(input, list) else input.squeeze(0) for input in inputs]
       (imgs, imgpath, annpath, ori_shapes, *_) = inputs

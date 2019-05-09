@@ -7,20 +7,23 @@ from torch import optim
 
 opt = Options()
 args = opt.opt
-args.experiment_name = 'voc_480'
+args.experiment_name = 'voc_480_foreground'
 args.gpu='1'
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu 
 args.dataset_name='VOC'
 args.dataset_root='/home/gwl/datasets/VOCdevkit'
+# args.dataset_root='/disk3/datasets/voc/'
 args.batch_size = 12
 args.fliptest=False
 args.multitest=False
+args.net_size=480
 # args.resume = 'load_darknet'
-# args.resume = 'load_yolov3'
-args.resume = 'best'
-net = Yolonet(n_classes=20).cuda()
+args.resume = 'load_yolov3'
+# args.resume = 'best'
+args.total_epoch=50
+net = Yolonet(n_classes=1).cuda()
 optimizer = optim.SGD(net.parameters(),lr=args.lr_initial,weight_decay=4e-05)
-scheduler=optim.lr_scheduler.MultiStepLR(optimizer, milestones=[70,90], gamma=0.1)
+scheduler=optim.lr_scheduler.MultiStepLR(optimizer, milestones=[20,30], gamma=0.1)
 
 _Trainer = get_trainer(dataset=args.dataset_name)(args=args,
                    model=net,

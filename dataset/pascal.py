@@ -3,7 +3,7 @@ from utils.dataset_util import PascalVocXmlParser
 import cv2
 from dataset.augment import transform
 import os
-from config import VOC_LABEL, VOC_ANCHOR_512, VOC_ANCHOR_480, TRAIN_INPUT_SIZES_VOC
+from config import *
 import random
 import torch
 from torch.utils.data import DataLoader
@@ -42,6 +42,9 @@ class VOCdataset:
       annpath = self._annopath.format(rootpath, filename)
       imgpath = self._imgpath.format(rootpath, filename)
       fname, bboxes, labels, _ = PascalVocXmlParser(annpath, self.labels).parse()
+      #only record foreground dataset
+      labels=[0]*len(labels)
+
       img = cv2.imread(imgpath, cv2.IMREAD_COLOR)
       img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
       ori_shape = img.shape[:2][::-1]  # yx-->xy
@@ -80,6 +83,7 @@ def get_dataset(dataset_name,dataset_root, batch_size, net_size):
   valset = DataLoader(dataset=valset, batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
 
   subset = [('2007', 'trainval'), ('2012', 'trainval')]
+  # subset = [('2007', 'trainval')]
   datatransform = transform.YOLO3DefaultTrainTransform(mean=(0, 0, 0), std=(1, 1, 1))
   trainset = VOCdataset(dataset_root, datatransform, subset, batch_size, net_size, istrain=True)
   trainset = DataLoader(dataset=trainset, batch_size=1, shuffle=True, num_workers=1, pin_memory=True)

@@ -45,7 +45,8 @@ class PascalVocXmlParser(object):
     difficult = []
     obj_tags = self.root.findall("object")
     for t in obj_tags:
-      labels.append(self.labels.index(t.find("name").text))
+      # labels.append(self.labels.index(t.find("name").text))
+      labels.append(0)
       difficult.append(t.find("difficult").text)
     return labels, difficult
 

@@ -129,28 +129,41 @@ VOC_ANCHOR_480 = [
   [200, 356],
   [401, 403]
 ]
-VOC_LABEL = [
-  "aeroplane",
-  "bicycle",
-  "bird",
-  "boat",
-  "bottle",
-  "bus",
-  "car",
-  "cat",
-  "chair",
-  "cow",
-  "diningtable",
-  "dog",
-  "horse",
-  "motorbike",
-  "person",
-  "pottedplant",
-  "sheep",
-  "sofa",
-  "train",
-  "tvmonitor"
+
+VOC_ANCHOR_64 = [
+  [18, 33],
+  [31, 89],
+  [55, 50],
+  [59, 163],
+  [106, 106],
+  [114, 246],
+  [264, 193],
+  [200, 356],
+  [401, 403]
 ]
+# VOC_LABEL = [
+#   "aeroplane",
+#   "bicycle",
+#   "bird",
+#   "boat",
+#   "bottle",
+#   "bus",
+#   "car",
+#   "cat",
+#   "chair",
+#   "cow",
+#   "diningtable",
+#   "dog",
+#   "horse",
+#   "motorbike",
+#   "person",
+#   "pottedplant",
+#   "sheep",
+#   "sofa",
+#   "train",
+#   "tvmonitor"
+# ]
+VOC_LABEL=['foreground']
 
 DUTS_ANCHOR_320=[
   [17,24],
