@@ -1,5 +1,5 @@
 from utils.util import ensure_dir
-from dataset import get_COCO, get_VOC
+from dataset import get_COCO, get_VOC,get_DUTS
 import os
 import time
 from config import *
@@ -106,6 +106,7 @@ class BaseTrainer:
 
   def _get_dataset(self):
     self.train_dataloader, self.test_dataloader = eval('get_{}'.format(self.dataset_name))(
+      dataset_name=self.args.dataset_name,
       dataset_root=self.dataset_root,
       batch_size=self.args.batch_size,
       net_size=self.net_size
@@ -120,7 +121,7 @@ class BaseTrainer:
 
       self.global_epoch += 1
       self._train_epoch()
-      if epoch>10:
+      if epoch>5:
         results, imgs = self._valid_epoch(multiscale=False, flip=False)
         for k, v in zip(self.logger_custom, results):
           self.writer.add_scalar(k, v, global_step=self.global_iter)
@@ -133,7 +134,7 @@ class BaseTrainer:
         if results[0] > self.best_mAP:
           self.best_mAP = results[0]
           self._save_ckpt(name='best',metric=self.best_mAP)
-        if epoch%5==0:
+        if epoch%10==0:
           self._save_ckpt(metric=results[0])
   def _get_loggers(self):
     self.LossBox = AverageMeter()
@@ -186,8 +187,6 @@ class BaseTrainer:
     self.model.eval()
     dataloader = get_imgdir(imgdir, batch_size=8, net_size=self.net_size)
     for i,(imgpath,imgs,ori_shapes) in enumerate(dataloader):
-      if i==50:
-        break
       ori_shapes=ori_shapes.cuda()
       if not multiscale:
         INPUT_SIZES = [self.net_size]

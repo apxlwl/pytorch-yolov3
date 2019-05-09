@@ -32,7 +32,7 @@ class Options():
     parser.add_argument('--load_best', action='store_true')
     parser.add_argument('--do_test', action='store_true')
     parser.add_argument('--valid_batch', default=200,help='reduce the validation to save time')
-
+    parser.add_argument('--do_inference', action='store_true')
     # important
     parser.add_argument('--freeze_darknet', action='store_true')
     parser.add_argument('--net_size', type=int ,default=416)

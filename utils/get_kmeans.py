@@ -82,8 +82,8 @@ class YOLO_Kmeans:
     f.close()
     return result
   def xml2boxes(self):
-    self.filename=["/home/gwl/datasets/VOCdevkit/VOC2012/Annotations",
-                   "/home/gwl/datasets/VOCdevkit/VOC2007/Annotations"]
+    self.filename=["/home/gwl/datasets/saliency/DUTS/val/annotations",
+                   "/home/gwl/datasets/saliency/DUTS/train/annotations"]
     dataset = []
     for dir in self.filename:
       for xml_file in glob.glob("{}/*xml".format(dir)):
@@ -92,10 +92,10 @@ class YOLO_Kmeans:
         height = int(tree.findtext("./size/height"))
         width = int(tree.findtext("./size/width"))
         for obj in tree.iter("object"):
-          xmin = float(obj.findtext("bndbox/xmin")) / width*512
-          ymin = float(obj.findtext("bndbox/ymin")) / height*512
-          xmax = float(obj.findtext("bndbox/xmax")) / width*512
-          ymax = float(obj.findtext("bndbox/ymax")) / height*512
+          xmin = float(obj.findtext("bndbox/xmin")) / width*320
+          ymin = float(obj.findtext("bndbox/ymin")) / height*320
+          xmax = float(obj.findtext("bndbox/xmax")) / width*320
+          ymax = float(obj.findtext("bndbox/ymax")) / height*320
           dataset.append([xmax - xmin, ymax - ymin])
     return np.array(dataset)
 

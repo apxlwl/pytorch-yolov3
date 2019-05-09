@@ -3,26 +3,30 @@ import glob
 import os
 import numpy as np
 from xml.etree.ElementTree import parse
+from pascal_voc_writer import Writer
+from os.path import join as osp
 
 def get_filelists(path, prefix, suffix):
   return glob.glob(os.path.join(path, '{}.{}'.format(prefix, suffix)))
+
 
 # -*- coding: utf-8 -*-
 
 class PascalVocXmlParser(object):
   """Parse annotation for 1-annotation file """
 
-  def __init__(self,annfile,labels):
-    self.annfile=annfile
-    self.root=self._root_tag(self.annfile)
-    self.tree=self._tree(self.annfile)
-    self.labels=labels
+  def __init__(self, annfile, labels):
+    self.annfile = annfile
+    self.root = self._root_tag(self.annfile)
+    self.tree = self._tree(self.annfile)
+    self.labels = labels
   def parse(self):
-    fname= self.get_fname()
-    labels,diffcults=self.get_labels()
-    boxes=self.get_boxes()
+    fname = self.get_fname()
+    labels, diffcults = self.get_labels()
+    boxes = self.get_boxes()
     # assert os.path.exists(fname),"file {} does not exist".format(fname)
-    return fname,np.array(boxes),labels,diffcults
+    return fname, np.array(boxes), labels, diffcults
+
   def get_fname(self):
     return os.path.join(self.root.find("filename").text)
 
@@ -43,7 +47,7 @@ class PascalVocXmlParser(object):
     for t in obj_tags:
       labels.append(self.labels.index(t.find("name").text))
       difficult.append(t.find("difficult").text)
-    return labels,difficult
+    return labels, difficult
 
   def get_boxes(self):
     bbs = []
@@ -58,6 +62,7 @@ class PascalVocXmlParser(object):
       bbs.append(box)
     bbs = np.array(bbs)
     return bbs
+
   def _root_tag(self, fname):
     tree = parse(fname)
     root = tree.getroot()
@@ -66,3 +71,24 @@ class PascalVocXmlParser(object):
   def _tree(self, fname):
     tree = parse(fname)
     return tree
+
+
+def txt2pascal(imgdir, txtfile, outputdir):
+  f=open(txtfile,'r')
+  lines=f.readlines()
+  # Writer(path, width, height)
+  for line in lines:
+    filename,hw,*boxes=line.strip().split(' ')
+    height,width=int(hw.split(',')[0]),int(hw.split(',')[1])
+    writer = Writer(osp(imgdir,filename), width, height)
+    # ::addObject(name, xmin, ymin, xmax, ymax)
+    for box in boxes:
+      boxinfo=box.split(',')
+      boxinfo=[boxinfo[0]]+[int(coord) for coord in boxinfo[1:]]
+      writer.addObject(*boxinfo)
+    writer.save(osp(outputdir,filename.split('.')[0]+'.xml'))
+
+
+if __name__ == '__main__':
+  txt2pascal(imgdir='/home/gwl/datasets/saliency/DUTS/val/imgs', txtfile='/home/gwl/datasets/saliency/DUTS/val.txt',
+             outputdir='/home/gwl/datasets/saliency/DUTS/val/annotations')

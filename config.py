@@ -152,5 +152,19 @@ VOC_LABEL = [
   "tvmonitor"
 ]
 
+DUTS_ANCHOR_320=[
+  [17,24],
+  [23,18],
+  [42,53],
+  [80,108],
+  [111,212],
+  [163,148],
+  [182,264],
+  [252,191],
+  [276,293]
+]
+DUTS_LABEL=['foreground']
+TRAIN_INPUT_SIZES_DUTS = [320]
+
 TRAIN_INPUT_SIZES_COCO = [320, 352, 384, 416, 448]
 TRAIN_INPUT_SIZES_VOC = [480]
