@@ -11,8 +11,6 @@ class Trainer(BaseTrainer):
     self.TESTevaluator = EvaluatorCOCO(anchors=self.anchors,
                                        cateNames=self.labels,
                                        rootpath=self.dataset_root,
-                                       score_thres=0.01,
-                                       iou_thres=0.5,
                                        )
     # get customized loggers
     self.logger_custom = ['mAP', 'mAp@50', 'mAP@75', 'mAP@small', 'mAP@meduim', 'mAP@large',

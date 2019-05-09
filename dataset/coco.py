@@ -134,7 +134,7 @@ class COCOdataset(data.Dataset):
            torch.from_numpy(np.array(grid2_batch).astype(np.float32))
 
 
-def get_dataset(dataset_root, batch_size, net_size):
+def get_dataset(dataset_name,dataset_root, batch_size, net_size):
   datatransform = transform.YOLO3DefaultValTransform(mean=(0, 0, 0), std=(1, 1, 1))
   valset = COCOdataset(dataset_root, datatransform, subset='val', batchsize=batch_size, netsize=net_size,istrain=False)
   valset = torch.utils.data.DataLoader(dataset=valset,batch_size=1,shuffle=False,num_workers=4,pin_memory=True)

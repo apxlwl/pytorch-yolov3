@@ -83,7 +83,7 @@ class BaseTrainer:
       self.optimizer.load_state_dict(ckptfile['opti_dict'])
       self.global_epoch = ckptfile['epoch']
       self.global_iter = ckptfile['iter']
-      self.best_mAP=ckptfile['metric']
+      # self.best_mAP=ckptfile['metric']
     print("successfully load checkpoint {}".format(self.args.resume))
 
   def _get_model(self):
@@ -92,7 +92,8 @@ class BaseTrainer:
     self._prepare_device()
     if self.args.resume:
       self._load_ckpt()
-
+    self.model = torch.nn.parallel.DataParallel(self.model)
+    self.model.cuda()
   def _prepare_device(self):
     # TODO: add distributed training
     pass
@@ -222,14 +223,14 @@ class BaseTrainer:
         nms_boxes, nms_scores, nms_labels = torch_nms(torch.cat(allboxes, dim=1),
                                                     torch.cat(allscores, dim=1),
                                                     num_classes=self.num_classes)
-        if nms_boxes is not None:
-          detected_img=visualize_boxes(np.array(Image.open(imgpath[imgidx]).convert('RGB')),
-                                       boxes=nms_boxes.cpu().numpy(),
-                                       labels=nms_labels.cpu().numpy(),
-                                       probs=nms_scores.cpu().numpy(),
-                                       class_labels=self.labels)
-          if outdir is not None:
-            plt.imsave(os.path.join(outdir,imgpath[imgidx].split('/')[-1]),detected_img)
+        # if nms_boxes is not None:
+        #   detected_img=visualize_boxes(np.array(Image.open(imgpath[imgidx]).convert('RGB')),
+        #                                boxes=nms_boxes.cpu().numpy(),
+        #                                labels=nms_labels.cpu().numpy(),
+        #                                probs=nms_scores.cpu().numpy(),
+        #                                class_labels=self.labels)
+        #   if outdir is not None:
+        #     plt.imsave(os.path.join(outdir,imgpath[imgidx].split('/')[-1]),detected_img)
 
   def _valid_epoch(self, multiscale, flip):
     s=time.time()
@@ -276,15 +277,18 @@ class BaseTrainer:
                                                     torch.cat(allscores, dim=1),
                                                     num_classes=self.num_classes)
         if nms_boxes is not None:
-          # print(imgpath[imgidx][0])
+          boxes_np,scores_np,labels_np=nms_boxes.cpu().numpy(),nms_scores.cpu().numpy(),nms_labels.cpu().numpy()
           self.TESTevaluator.append(imgpath[imgidx][0],
                                     annpath[imgidx][0],
-                                    nms_boxes.cpu().numpy(),
-                                    nms_scores.cpu().numpy(),
-                                    nms_labels.cpu().numpy())
+                                    boxes_np,
+                                    scores_np,
+                                    labels_np)
     results = self.TESTevaluator.evaluate()
     imgs = self.TESTevaluator.visual_imgs
     for k, v in zip(self.logger_custom, results):
       print("{}:{}".format(k, v))
     print("validation cost {} s".format(time.time()-s))
     return results, imgs
+    # t=time.time()-s
+    # print(t)
+    # print(len(self.test_dataloader)/t)

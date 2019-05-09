@@ -82,9 +82,3 @@ def get_dataset(dataset_name,dataset_root, batch_size, net_size):
   trainset = DataLoader(dataset=trainset, batch_size=1, shuffle=True, num_workers=1, pin_memory=True)
   return trainset, valset
 
-if __name__ == '__main__':
-  train,val=get_dataset('DUTS','/home/gwl/datasets/saliency/DUTS',2,320)
-  for i in val:
-    print(i)
-    assert 0
-

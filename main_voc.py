@@ -1,6 +1,6 @@
 from options import Options
 from yolo.models.yolov3 import Yolonet
-from trainers.trainer_voc import Trainer
+from trainers import get_trainer
 import json
 import os
 from torch import optim
@@ -8,21 +8,21 @@ from torch import optim
 opt = Options()
 args = opt.opt
 args.experiment_name = 'voc_480'
-args.gpu='0'
+args.gpu='1'
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu 
 args.dataset_name='VOC'
 args.dataset_root='/home/gwl/datasets/VOCdevkit'
 args.batch_size = 12
 args.fliptest=False
 args.multitest=False
-args.resume = 'load_darknet'
+# args.resume = 'load_darknet'
 # args.resume = 'load_yolov3'
-# args.resume = 'best'
+args.resume = 'best'
 net = Yolonet(n_classes=20).cuda()
 optimizer = optim.SGD(net.parameters(),lr=args.lr_initial,weight_decay=4e-05)
 scheduler=optim.lr_scheduler.MultiStepLR(optimizer, milestones=[70,90], gamma=0.1)
 
-_Trainer = Trainer(args=args,
+_Trainer = get_trainer(dataset=args.dataset_name)(args=args,
                    model=net,
                    optimizer=optimizer,
                    lrscheduler=scheduler

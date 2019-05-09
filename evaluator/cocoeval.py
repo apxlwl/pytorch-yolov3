@@ -5,7 +5,7 @@ import os
 from .Evaluator import Evaluator
 import numpy as np
 class EvaluatorCOCO(Evaluator):
-  def __init__(self,anchors,cateNames,rootpath,score_thres,iou_thres):
+  def __init__(self,anchors,cateNames,rootpath):
     self.coco_imgIds=set([])
     self.coco_results=[]
     self.idx2cat= {
@@ -92,7 +92,7 @@ class EvaluatorCOCO(Evaluator):
                }
     self.cat2idx= {int(v): int(k) for k, v in self.idx2cat.items()}
     self.reset()
-    super().__init__(anchors, cateNames, rootpath, score_thres, iou_thres)
+    super().__init__(anchors, cateNames, rootpath)
 
   def reset(self):
     self.coco_imgIds=set([])

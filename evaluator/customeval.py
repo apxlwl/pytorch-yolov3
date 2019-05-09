@@ -9,13 +9,13 @@ import os
 from .Evaluator import Evaluator
 from os.path import join as osp
 class EvaluatorDUTS(Evaluator):
-  def __init__(self, anchors,cateNames,rootpath,score_thres,iou_thres,use_07_metric=False):
+  def __init__(self, anchors,cateNames,rootpath,use_07_metric=False):
     self.rec_pred = defaultdict(list)
     self.rec_gt = defaultdict(list)
     self.use_07_metric = use_07_metric
     self._annopath = os.path.join(rootpath, 'val', 'annotations')
     self.reset()
-    super().__init__(anchors, cateNames, rootpath, score_thres, iou_thres)
+    super().__init__(anchors, cateNames, rootpath)
 
   def reset(self):
     self.coco_imgIds = set([])
@@ -31,13 +31,16 @@ class EvaluatorDUTS(Evaluator):
           "score": float(nms_scores[i])
         }
         self.rec_pred[nms_labels[i]].append(rec)
+      self.num_visual=2000
       if visualize and len(self.visual_imgs) < self.num_visual:
         _, boxGT, labelGT, _ = PascalVocXmlParser(str(annpath), self.cateNames).parse()
         boxGT=np.array(boxGT)
         labelGT=np.array(labelGT)
         self.append_visulize(imgpath, nms_boxes, nms_labels, nms_scores, boxGT, labelGT)
 
-  def evaluate(self):
+  def evaluate(self,predcache=None):
+    import pickle
+    pickle.dump(self.rec_pred,open('/home/gwl/PycharmProjects/mine/pytorch-yolo3/dutsresult/pred.pkl','wb'))
     aps = []
     for idx, cls in enumerate(self.cateNames):
       if len(self.rec_pred[idx]) > 0:
@@ -64,7 +67,6 @@ class EvaluatorDUTS(Evaluator):
           _recs_gt[imgidx]['bbox'] = _box
           _recs_gt[imgidx]['difficult'] = _dif
           _recs_gt[imgidx]['detected'] = _detected
-
         # computer iou for each pred record
         for idx in range(len(img_idxs)):
           _rec_gt = _recs_gt[img_idxs[idx]]
@@ -78,7 +80,6 @@ class EvaluatorDUTS(Evaluator):
             iymin = np.maximum(_bbGT[:, 1], _bbPre[1])
             ixmax = np.minimum(_bbGT[:, 2], _bbPre[2])
             iymax = np.minimum(_bbGT[:, 3], _bbPre[3])
-
             iw = np.maximum(ixmax - ixmin, 0.)
             ih = np.maximum(iymax - iymin, 0.)
             inters = iw * ih

@@ -10,8 +10,6 @@ class Trainer(BaseTrainer):
     self.TESTevaluator = EvaluatorVOC(anchors=self.anchors,
                                       cateNames=self.labels,
                                       rootpath=self.dataset_root,
-                                      score_thres=0.01,
-                                      iou_thres=0.5,
                                       use_07_metric=False
                                       )
     self.logger_custom = ['mAP']+['AP@{}'.format(cls) for cls in self.labels]

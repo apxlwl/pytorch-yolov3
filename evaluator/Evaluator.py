@@ -7,10 +7,8 @@ from yolo.yolo_loss import predict_yolo
 from PIL import Image
 
 class Evaluator:
-  def __init__(self,anchors,cateNames,rootpath,score_thres=0.01,iou_thres=0.5):
+  def __init__(self,anchors,cateNames,rootpath):
     self.anchors=anchors
-    self.score_thres=score_thres
-    self.iou_thres=iou_thres
     self.cateNames = cateNames
     self.dataset_root=rootpath
 

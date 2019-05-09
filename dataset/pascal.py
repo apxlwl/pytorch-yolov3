@@ -72,7 +72,7 @@ class VOCdataset:
     return self._load_batch(item, trainsize)
 
 
-def get_dataset(dataset_root, batch_size, net_size):
+def get_dataset(dataset_name,dataset_root, batch_size, net_size):
   subset = [('2007', 'test')]
   datatransform = transform.YOLO3DefaultValTransform(mean=(0, 0, 0), std=(1, 1, 1))
   valset = VOCdataset(dataset_root, datatransform, subset, batch_size, net_size, istrain=False)
