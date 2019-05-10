@@ -48,9 +48,10 @@ def predict_yolo(feature_map_list, anchors, inputshape, imgshape, num_classes):
 
     _boxes_center, _boxes_wh, _conf, _classes = process_output(_feature, _anchor, inputshape, training=False,
                                                                num_classes=num_classes)
-    _score = _conf * _classes
-    _score = _score.view([1, -1, num_classes])
-
+    #_score = _conf * _classes
+    #_score = _score.view([1, -1, num_classes])
+    _score = _conf.view([1, -1, num_classes])
+    
     _boxes_center = _boxes_center * imgshape
     _boxes_wh = _boxes_wh * imgshape
 

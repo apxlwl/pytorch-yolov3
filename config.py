@@ -105,6 +105,17 @@ COCO_LABEL = [
   "toothbrush"
 ]
 
+VOC_ANCHOR_608 = [
+  [24,44],
+  [42,120],
+  [75,67],
+  [80,220],
+  [144,143],
+  [154,333],
+  [357,261],
+  [271,481],
+  [542,544]
+]
 #VOC_ANCHOR under 512 resolution
 VOC_ANCHOR_512 = [
   [19, 35],
@@ -180,4 +191,4 @@ DUTS_LABEL=['foreground']
 
 TRAIN_INPUT_SIZES_DUTS = [320]
 TRAIN_INPUT_SIZES_COCO = [608]
-TRAIN_INPUT_SIZES_VOC = [480]
+TRAIN_INPUT_SIZES_VOC = [608]

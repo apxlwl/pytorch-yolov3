@@ -90,6 +90,7 @@ class BaseTrainer:
     self.save_path = './checkpoints/{}/'.format(self.args.experiment_name)
     ensure_dir(self.save_path)
     self._prepare_device()
+    #self.model = torch.nn.parallel.DataParallel(self.model)
     if self.args.resume:
       self._load_ckpt()
     self.model = torch.nn.parallel.DataParallel(self.model)
@@ -172,8 +173,6 @@ class BaseTrainer:
   def _train_epoch(self):
     self.model.train()
     for idx_batch, inputs in enumerate(self.train_dataloader):
-      if idx_batch==3:
-        break
       inputs = [input if isinstance(input, list) else input.squeeze(0) for input in inputs]
       img, _, _, _, *labels = inputs
       self.global_iter += 1
@@ -239,8 +238,6 @@ class BaseTrainer:
     self.model.eval()
     for idx_batch, inputs in enumerate(self.test_dataloader):
       if idx_batch == self.args.valid_batch and not self.args.do_test:  # to save time
-        break
-      if idx_batch==3:
         break
       inputs = [input if isinstance(input, list) else input.squeeze(0) for input in inputs]
       (imgs, imgpath, annpath, ori_shapes, *_) = inputs
