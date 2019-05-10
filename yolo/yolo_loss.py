@@ -70,6 +70,8 @@ def predict_yolo(feature_map_list, anchors, inputshape, imgshape, num_classes):
   return allboxes, allscores
 
 def loss_yolo(feature_map_list, gt_list, anchors, inputshape, num_classes, use_focal=False):
+  def focal_loss(target, pred, alpha=1, gamma=2):
+    return alpha * torch.pow(torch.abs(target - pred), gamma)
   bzsize = feature_map_list[0].shape[0]
   bcelogit_loss = torch.nn.BCEWithLogitsLoss(reduction='none')
   smooth_loss = torch.nn.SmoothL1Loss(reduction='none')
@@ -105,8 +107,11 @@ def loss_yolo(feature_map_list, gt_list, anchors, inputshape, num_classes, use_f
     _box_loss_scale = 2 - _gt[..., 2:3] * _gt[..., 3:4]
     _xy_loss = 2.0 * 1.0 * _object_mask * _box_loss_scale * bcelogit_loss(input=_feature[..., 0:2], target=_raw_true_xy)
     _wh_loss = 2.0 * 1.5 * _object_mask * _box_loss_scale * smooth_loss(input=_feature[..., 2:4], target=_raw_true_wh)
-
-    _conf_loss = (_object_mask * bcelogit_loss(target=_object_mask, input=_feature[..., 4:5]) +
+    if use_focal:
+      _focal_scale = focal_loss(target=_object_mask, pred=_box_conf)
+    else:
+      _focal_scale = 1
+    _conf_loss = _focal_scale*(_object_mask * bcelogit_loss(target=_object_mask, input=_feature[..., 4:5]) +
                   (1 - _object_mask) * _ignore_mask * bcelogit_loss(target=_object_mask, input=_feature[..., 4:5]))
 
     _class_loss = _object_mask * bcelogit_loss(target=_true_class_probs,input=_feature[..., 5:])
